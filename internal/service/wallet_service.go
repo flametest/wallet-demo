@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/flametest/vita/verrors"
+	"github.com/flametest/vita/vgorm"
 	"github.com/flametest/wallet-demo/internal/container"
 	"github.com/flametest/wallet-demo/internal/infra/model"
 	"github.com/flametest/wallet-demo/pkg/dto"
@@ -15,7 +16,7 @@ import (
 type WalletService interface {
 	CreateWallet(ctx context.Context, req *dto.CreateWalletReq) (*model.Wallet, error)
 	GetByDisplayId(ctx context.Context, displayId string) (*model.Wallet, error)
-	TransferFund(ctx context.Context, req *dto.WalletTransferRequest) error
+	TransferFund(ctx context.Context, req *dto.WalletTransferReq) error
 }
 
 type walletServiceImpl struct {
@@ -57,7 +58,54 @@ func (w *walletServiceImpl) GetByDisplayId(ctx context.Context, displayId string
 	return wallet, nil
 }
 
-func (w *walletServiceImpl) TransferFund(ctx context.Context, req *dto.WalletTransferRequest) error {
-	//TODO implement me
-	panic("implement me")
+func (w *walletServiceImpl) TransferFund(ctx context.Context, req *dto.WalletTransferReq) error {
+	amount, err := decimal.NewFromString(req.Amount)
+	if err != nil {
+		return verrors.BadRequestError("invalid amount format")
+	}
+
+	if amount.LessThanOrEqual(decimal.Zero) {
+		return verrors.BadRequestError("amount must be greater than zero")
+	}
+
+	walletRepo := w.container.GetRepository().GetWalletRepo()
+	fromWallet, err := walletRepo.GetByDisplayId(ctx, req.FromDisplayId)
+	if err != nil {
+		if verrors.Is(err, gorm.ErrRecordNotFound) {
+			return verrors.NotFoundError("source wallet not found")
+		}
+		return err
+	}
+
+	toWallet, err := walletRepo.GetByDisplayId(ctx, req.ToDisplayId)
+	if err != nil {
+		if verrors.Is(err, gorm.ErrRecordNotFound) {
+			return verrors.NotFoundError("destination wallet not found")
+		}
+		return err
+	}
+
+	// Check sufficient balance
+	if fromWallet.Balance.LessThan(amount) {
+		return verrors.BadRequestError("insufficient balance")
+	}
+
+	fromWallet.Balance = fromWallet.Balance.Sub(amount)
+	toWallet.Balance = toWallet.Balance.Add(amount)
+
+	err = walletRepo.DoInTx(func(tx vgorm.Tx) error {
+		newRepo := w.container.GetRepository().GetWalletRepo(tx)
+		if err := newRepo.Upsert(ctx, fromWallet); err != nil {
+			return err
+		}
+		if err := newRepo.Upsert(ctx, toWallet); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
