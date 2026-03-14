@@ -1,7 +1,31 @@
 package handler
 
-import "github.com/labstack/echo/v4"
+import (
+	"net/http"
+
+	"github.com/flametest/vita/verrors"
+	"github.com/flametest/wallet-demo/pkg/dto"
+	"github.com/go-playground/validator/v10"
+	"github.com/labstack/echo/v4"
+)
 
 func (h *WalletHandler) CreateWallet(c echo.Context) error {
-	return nil
+	req := &dto.CreateWalletReq{}
+	binder := echo.DefaultBinder{}
+	err := binder.BindBody(c, req)
+	if err != nil {
+		return verrors.BadRequestError(err.Error())
+	}
+
+	validate := validator.New()
+	err = validate.Struct(req)
+	if err != nil {
+		return verrors.BadRequestError(err.Error())
+	}
+
+	wallet, err := h.walletService.CreateWallet(c.Request().Context(), req)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, wallet)
 }

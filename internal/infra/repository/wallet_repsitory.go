@@ -9,6 +9,7 @@ import (
 
 type WalletRepository interface {
 	Create(ctx context.Context, wallet *model.Wallet) error
+	GetByName(ctx context.Context, walletName string) (*model.Wallet, error)
 	GetByDisplayId(ctx context.Context, displayId string) (*model.Wallet, error)
 }
 
@@ -22,6 +23,15 @@ func NewWalletRepository(db *gorm.DB) WalletRepository {
 
 func (t *walletRepositoryImpl) Create(ctx context.Context, wallet *model.Wallet) error {
 	return t.db.WithContext(ctx).Create(wallet).Error
+}
+
+func (t *walletRepositoryImpl) GetByName(ctx context.Context, walletName string) (*model.Wallet, error) {
+	var wallet model.Wallet
+	err := t.db.WithContext(ctx).Where("name = ?", walletName).First(&wallet).Error
+	if err != nil {
+		return nil, err
+	}
+	return &wallet, nil
 }
 
 func (t *walletRepositoryImpl) GetByDisplayId(ctx context.Context, displayId string) (*model.Wallet, error) {
