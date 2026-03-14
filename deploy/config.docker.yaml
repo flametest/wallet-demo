@@ -1,0 +1,13 @@
+AppConfig:
+  name: wallet-demo
+  addr: 0.0.0.0:8080
+  env: dev
+LogLevel: 0
+Datasource:
+  dialect: mysql
+  host: mysql
+  port: 3306
+  username: wallet
+  password: wallet
+  database: wallet
+  debug: true
