@@ -27,5 +27,10 @@ func (h *WalletHandler) CreateWallet(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return c.JSON(http.StatusOK, wallet)
+	walletDto := &dto.WalletDto{
+		Name:      wallet.Name,
+		Balance:   wallet.Balance,
+		DisplayId: wallet.DisplayId,
+	}
+	return c.JSON(http.StatusOK, walletDto)
 }

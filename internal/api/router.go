@@ -27,7 +27,7 @@ func (a *App) Router(server vserver.Server) vserver.Server {
 		return c.String(http.StatusOK, "up")
 	})
 	e.Add("POST", "/wallets", walletHandler.CreateWallet)
-	e.Add("GET", "/wallets/:displayId", walletHandler.GetWalletDetail)
+	e.Add("GET", "/wallets/:display_id", walletHandler.GetWalletDetail)
 	e.Add("POST", "/wallets/transfer", walletHandler.TransferFund)
 	return srv
 }

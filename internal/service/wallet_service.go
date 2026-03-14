@@ -49,8 +49,12 @@ func (w *walletServiceImpl) CreateWallet(ctx context.Context, req *dto.CreateWal
 }
 
 func (w *walletServiceImpl) GetByDisplayId(ctx context.Context, displayId string) (*model.Wallet, error) {
-	//TODO implement me
-	panic("implement me")
+	walletRepo := w.container.GetRepository().GetWalletRepo()
+	wallet, err := walletRepo.GetByDisplayId(ctx, displayId)
+	if err != nil {
+		return nil, err
+	}
+	return wallet, nil
 }
 
 func (w *walletServiceImpl) TransferFund(ctx context.Context, req *dto.WalletTransferRequest) error {
