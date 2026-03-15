@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"sort"
 
 	"github.com/flametest/vita/verrors"
 	"github.com/flametest/vita/vgorm"
@@ -93,13 +94,18 @@ func (w *walletServiceImpl) TransferFund(ctx context.Context, req *dto.WalletTra
 	fromWallet.Balance = fromWallet.Balance.Sub(amount)
 	toWallet.Balance = toWallet.Balance.Add(amount)
 
+	// sort to prevent deadlocks
+	wallets := []*model.Wallet{fromWallet, toWallet}
+	sort.Slice(wallets, func(i, j int) bool {
+		return wallets[i].Id < wallets[j].Id
+	})
+
 	err = walletRepo.DoInTx(func(tx vgorm.Tx) error {
 		newRepo := w.container.GetRepository().GetWalletRepo(tx)
-		if err := newRepo.UpdateWithVersion(ctx, fromWallet); err != nil {
-			return err
-		}
-		if err := newRepo.UpdateWithVersion(ctx, toWallet); err != nil {
-			return err
+		for _, wallet := range wallets {
+			if err := newRepo.UpdateWithVersion(ctx, wallet); err != nil {
+				return err
+			}
 		}
 		return nil
 	})
