@@ -3,7 +3,7 @@ module github.com/flametest/wallet-demo
 go 1.26
 
 require (
-	github.com/flametest/vita v0.0.0-20260315060106-0a3a726eac6b
+	github.com/flametest/vita v0.0.0-20260315063448-27d34735d528
 	github.com/go-playground/validator/v10 v10.30.1
 	github.com/google/uuid v1.6.0
 	github.com/labstack/echo/v4 v4.15.1

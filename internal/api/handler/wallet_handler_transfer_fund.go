@@ -25,5 +25,5 @@ func (h *WalletHandler) TransferFund(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return c.JSON(http.StatusOK, "success")
+	return c.JSON(http.StatusOK, "Transfer Success")
 }
