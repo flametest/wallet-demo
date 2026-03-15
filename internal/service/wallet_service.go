@@ -53,8 +53,11 @@ func (w *walletServiceImpl) CreateWallet(ctx context.Context, req *dto.CreateWal
 func (w *walletServiceImpl) GetByDisplayId(ctx context.Context, displayId string) (*model.Wallet, error) {
 	walletRepo := w.container.GetRepository().GetWalletRepo()
 	wallet, err := walletRepo.GetByDisplayId(ctx, displayId)
-	if err != nil {
+	if err != nil && !verrors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
+	}
+	if verrors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, verrors.NotFoundError("wallet not found")
 	}
 	return wallet, nil
 }
