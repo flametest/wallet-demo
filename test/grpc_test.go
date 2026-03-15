@@ -12,12 +12,8 @@ import (
 )
 
 func TestGrpcService(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	conn, err := grpc.DialContext(ctx, "localhost:9002",
+	conn, err := grpc.NewClient("localhost:9002",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithBlock(),
 	)
 	if err != nil {
 		t.Fatalf("Failed to connect to gRPC server: %v", err)
@@ -127,7 +123,7 @@ func TestGrpcService(t *testing.T) {
 }
 
 func BenchmarkCreateWallet(b *testing.B) {
-	conn, err := grpc.Dial("localhost:9002",
+	conn, err := grpc.NewClient("localhost:9002",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {

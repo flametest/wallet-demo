@@ -103,6 +103,8 @@ func (w *walletServiceImpl) TransferFund(ctx context.Context, req *dto.WalletTra
 		return wallets[i].Id < wallets[j].Id
 	})
 
+	// alternative solution:
+	// add a ledger table, and update only one wallet and ledger, the other wallet consumes the ledger changes.
 	err = walletRepo.DoInTx(func(tx vgorm.Tx) error {
 		newRepo := w.container.GetRepository().GetWalletRepo(tx)
 		for _, wallet := range wallets {

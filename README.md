@@ -1,9 +1,14 @@
 ### How to run the code
 
-#### 1. Start with commanline
+#### 1. Start with command line
 
-##### Make sure the 8080 & 9002 port is available and run the following command to start the server
+##### Make sure the 3306 & 8080 & 9002 port is available and run the following command to start the server
+a. start the mysql server.
+```
+docker compose up mysql -d
+```
 
+b. run the code
 ```
 go run cmd/wallet-demo/main.go
 ```
