@@ -13,6 +13,7 @@ import (
 	"github.com/flametest/wallet-demo/internal/api"
 	"github.com/flametest/wallet-demo/internal/config"
 	"github.com/flametest/wallet-demo/internal/container"
+	grpcServer "github.com/flametest/wallet-demo/internal/grpc"
 )
 
 var cfgFile = flag.String("config", "deploy/config.yaml", "config file")
@@ -35,6 +36,7 @@ func main() {
 	verrors.Initialize(cfg.AppConfig.Name)
 	log.InitLogger(cfg.AppConfig.Name, cfg.LogLevel)
 	log.Info().Msg("starting wallet-demo")
+	// http server
 	srv, err := vserver.NewEchoServer(ctx, &cfg.AppConfig)
 	if err != nil {
 		panic(err)
@@ -48,10 +50,23 @@ func main() {
 	go func() {
 		_ = srv.Start(ctx)
 	}()
+	// grpc server
+	gRPCSrv, err := grpcServer.NewGrpcServer(c)
+	if err != nil {
+		panic(err)
+	}
+	go func() {
+		log.Info().Msgf("starting gRPC server on %s", cfg.GrpcAddr)
+		if err := gRPCSrv.Start(cfg.GrpcAddr); err != nil {
+			log.Fatal().Err(err).Msg("gRPC server failed")
+		}
+	}()
 
 	<-ctx.Done()
 
 	log.Info().Msg("shutting down gracefully...")
+
+	gRPCSrv.Stop()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

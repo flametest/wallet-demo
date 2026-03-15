@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	AppConfig  vserver.EchoServerConfig `json:"app_config" yaml:"AppConfig"`
+	GrpcAddr   string                   `json:"grpc_addr" yaml:"GrpcAddr"`
 	LogLevel   zerolog.Level            `json:"log_level" yaml:"LogLevel"`
 	Datasource *vgorm.Config            `json:"datasource" yaml:"Datasource"`
 }

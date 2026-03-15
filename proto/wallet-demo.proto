@@ -1,0 +1,35 @@
+syntax="proto3";
+package proto;
+option go_package="github.com/flametest/wallet-demo/proto";
+
+message Wallet {
+  string name = 1;
+  string display_id = 2;
+  string balance = 3;
+}
+
+service WalletDemoService {
+  rpc CreateWallet(CreateWalletReq) returns (Wallet);
+  rpc GetWalletDetail(GetWalletDetailReq) returns (Wallet);
+  rpc WalletTransfer(WalletTransferReq) returns (WalletTransferResp);
+}
+
+message CreateWalletReq {
+  string name = 1;
+}
+
+message GetWalletDetailReq {
+  string display_id = 1;
+}
+
+message WalletTransferReq {
+  string from_display_id = 1;
+  string to_display_id = 2;
+  string amount = 3;
+}
+
+message WalletTransferResp {
+  string message = 1;
+}
+
+

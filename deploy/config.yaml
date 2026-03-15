@@ -3,6 +3,7 @@ AppConfig:
   addr: 127.0.0.1:8080
   env: dev
   withStack: false
+GrpcAddr: :9002
 LogLevel: 0
 Datasource:
   dialect: mysql
