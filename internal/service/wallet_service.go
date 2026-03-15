@@ -77,6 +77,11 @@ func (w *walletServiceImpl) TransferFund(ctx context.Context, req *dto.WalletTra
 		return err
 	}
 
+	// Check sufficient balance
+	if fromWallet.Balance.LessThan(amount) {
+		return verrors.BadRequestError("insufficient balance")
+	}
+
 	toWallet, err := walletRepo.GetByDisplayId(ctx, req.ToDisplayId)
 	if err != nil {
 		if verrors.Is(err, gorm.ErrRecordNotFound) {
@@ -85,20 +90,15 @@ func (w *walletServiceImpl) TransferFund(ctx context.Context, req *dto.WalletTra
 		return err
 	}
 
-	// Check sufficient balance
-	if fromWallet.Balance.LessThan(amount) {
-		return verrors.BadRequestError("insufficient balance")
-	}
-
 	fromWallet.Balance = fromWallet.Balance.Sub(amount)
 	toWallet.Balance = toWallet.Balance.Add(amount)
 
 	err = walletRepo.DoInTx(func(tx vgorm.Tx) error {
 		newRepo := w.container.GetRepository().GetWalletRepo(tx)
-		if err := newRepo.Upsert(ctx, fromWallet); err != nil {
+		if err := newRepo.UpdateWithVersion(ctx, fromWallet); err != nil {
 			return err
 		}
-		if err := newRepo.Upsert(ctx, toWallet); err != nil {
+		if err := newRepo.UpdateWithVersion(ctx, toWallet); err != nil {
 			return err
 		}
 		return nil

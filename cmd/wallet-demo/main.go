@@ -7,6 +7,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/flametest/vita/verrors"
 	log "github.com/flametest/vita/vlog"
 	"github.com/flametest/vita/vserver"
 	"github.com/flametest/wallet-demo/internal/api"
@@ -31,6 +32,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	verrors.Initialize(cfg.AppConfig.Name)
 	log.InitLogger(cfg.AppConfig.Name, cfg.LogLevel)
 	log.Info().Msg("starting wallet-demo")
 	srv, err := vserver.NewEchoServer(ctx, &cfg.AppConfig)
